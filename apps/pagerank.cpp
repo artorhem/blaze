@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
     delete frontier;
 
     time.stop();
-    std::cout << "time: " << time.get() << std::endl;
+    std::cout << "time: " << time.get() <<"ms"<< std::endl;
     printTop(data);
 
     delete bins;
