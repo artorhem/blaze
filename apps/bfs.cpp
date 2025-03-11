@@ -81,9 +81,15 @@ int main(int argc, char **argv) {
     Runtime runtime(numComputeThreads, numIoThreads, ioBufferSize * MB);
     runtime.initBinning(binningRatio);
 
+    galois::StatTimer read_t ("Time", "ReadGraph");
+    read_t.start();
     Graph outGraph;
     outGraph.BuildGraph(outIndexFilename, outAdjFilenames);
+    read_t.stop();
+    std::cout << "GraphReadingTime: " << read_t.get() << "ms" <<std::endl;
 
+    galois::StatTimer time("Time", "BFS_MAIN");
+    time.start();
     uint64_t n = outGraph.NumberOfNodes();
 
     Array<VID> parents;
@@ -102,8 +108,7 @@ int main(int argc, char **argv) {
     Worklist<VID>* frontier = new Worklist<VID>(n);
     frontier->activate(startNode);
 
-    galois::StatTimer time("Time", "BFS_MAIN");
-    time.start();
+
 
     while (!frontier->empty()) {
         Worklist<VID>* output = edgeMap(outGraph, frontier, BFS_F(parents, bins), prop_blocking);

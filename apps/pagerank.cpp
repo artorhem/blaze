@@ -166,9 +166,18 @@ int main(int argc, char **argv) {
     Runtime runtime(numComputeThreads, numIoThreads, ioBufferSize * MB);
     runtime.initBinning(binningRatio);
 
+    //start the chrono timer
+    galois::StatTimer read_t ("Time", "ReadGraph");
+    read_t.start();
     Graph outGraph;
     outGraph.BuildGraph(outIndexFilename, outAdjFilenames);
+    read_t.stop();
 
+    // print the time in milliseconds
+    std::cout << "Graph building time: " << read_t.get() << "ms" << std::endl;
+
+    galois::StatTimer time("Time", "PAGERANK_MAIN");
+    time.start();
     uint64_t n = outGraph.NumberOfNodes();
     float one_over_n = 1 / (float)n;
 
@@ -188,9 +197,6 @@ int main(int argc, char **argv) {
     vertexMap(outGraph, PR_Vertex_Init(data, one_over_n));
 
     galois::GAccumulator<float> totalDelta;
-
-    galois::StatTimer time("Time", "PAGERANK_MAIN");
-    time.start();
 
     long iter = 0;
 
@@ -213,7 +219,7 @@ int main(int argc, char **argv) {
     delete frontier;
 
     time.stop();
-
+    std::cout << "time: " << time.get() << std::endl;
     printTop(data);
 
     delete bins;
